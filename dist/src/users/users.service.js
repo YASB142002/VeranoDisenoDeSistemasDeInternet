@@ -16,20 +16,53 @@ let UsersService = class UsersService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    create(createUserDto) {
-        return 'This action adds a new user';
+    async create(createUserDto) {
+        try {
+            return await this.prisma.user.create({
+                data: createUserDto,
+            });
+        }
+        catch (error) {
+            // P2002 es el código de Prisma para violación de restricción única (email/username)
+            if (error instanceof Error && error.code === 'P2002') {
+                throw new common_1.ConflictException('El email o username ya existe.');
+            }
+            throw error;
+        }
     }
     findAll() {
-        return this.prisma.user.findMany();
+        return this.prisma.user.findMany({
+            include: { profiles: true } // Opcional: incluye relaciones
+        });
     }
-    findOne(id) {
-        return `This action returns a #${id} user`;
+    async findOne(id) {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+        });
+        if (!user)
+            throw new common_1.NotFoundException(`Usuario con ID ${id} no encontrado`);
+        return user;
     }
-    update(id, updateUserDto) {
-        return `This action updates a #${id} user`;
+    async update(id, updateUserDto) {
+        try {
+            return await this.prisma.user.update({
+                where: { id },
+                data: updateUserDto,
+            });
+        }
+        catch (error) {
+            throw new common_1.NotFoundException(`No se pudo actualizar: Usuario ${id} no existe`);
+        }
     }
-    remove(id) {
-        return `This action removes a #${id} user`;
+    async remove(id) {
+        try {
+            return await this.prisma.user.delete({
+                where: { id },
+            });
+        }
+        catch (error) {
+            throw new common_1.NotFoundException(`No se pudo eliminar: Usuario ${id} no existe`);
+        }
     }
 };
 exports.UsersService = UsersService;
