@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  //output   = "../generated/prisma"
+}
+
+// datasource db {
+//   provider = "postgresql"
+// }
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  name           String
+  username       String    @unique
+  email          String    @unique
+  hashedPassword String?
+  role           String    @default("user")
+  profiles       Profile[]
+  tenate         Tenate?   @relation(fields: [tenateId], references: [id])
+  tenateId       Int?
+}
+
+model Profile {
+  id     Int     @id @default(autoincrement())
+  bio    String?
+  userId Int     @unique
+  user   User    @relation(fields: [userId], references: [id])
+}
+
+model Tenate {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users User[]
+}
+
+model Post {
+  id         Int            @id @default(autoincrement())
+  categories PostCategory[]
+}
+
+model Category {
+  id    Int            @id @default(autoincrement())
+  name  String         @unique
+  posts PostCategory[]
+}
+
+model PostCategory {
+  postId     Int
+  categoryId Int
+  post       Post @relation(fields: [postId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([postId, categoryId])
+}
