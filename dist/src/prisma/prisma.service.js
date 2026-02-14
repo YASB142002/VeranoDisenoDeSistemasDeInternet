@@ -8,13 +8,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrismaService = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("../generated/prisma/client");
+const client_1 = require("@prisma/client");
 let PrismaService = class PrismaService extends client_1.PrismaClient {
+    // En Prisma 6, no necesitas pasar nada al constructor si la URL 
+    // está en el schema.prisma o en el .env
     async onModuleInit() {
         await this.$connect();
-    }
-    async onModuleDestroy() {
-        await this.$disconnect();
     }
 };
 exports.PrismaService = PrismaService;

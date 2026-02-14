@@ -1,8 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import 'dotenv/config';
 
 async function bootstrap() {
+  console.log("DATABASE_URL en main.ts:", process.env.DATABASE_URL);
   const app = await NestFactory.create(AppModule);
 
   // Configuración de Swagger
