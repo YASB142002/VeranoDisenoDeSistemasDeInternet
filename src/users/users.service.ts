@@ -2,6 +2,7 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -9,12 +10,20 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     try {
+      const { password, ...userData } = createUserDto as any;
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+
       return await this.prisma.user.create({
-        data: createUserDto as any,
+        data: {
+          ...userData,
+          hashedPassword: hashedPassword,
+        },
       });
-    } catch (error) {
-      // P2002 es el código de Prisma para violación de restricción única (email/username)
-      if (error instanceof Error && (error as any).code === 'P2002') {
+    } catch (error: any) {
+      if (error?.code === 'P2002') {
         throw new ConflictException('El email o username ya existe.');
       }
       throw error;
@@ -23,7 +32,7 @@ export class UsersService {
 
   findAll() {
     return this.prisma.user.findMany({
-      include: { profiles: true } // Opcional: incluye relaciones
+      include: { profiles: true }
     });
   }
 
@@ -32,6 +41,7 @@ export class UsersService {
       where: { id },
     });
     if (!user) throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    console.log(await bcrypt.hash(user.hashedPassword?.toString() || '', 10));
     return user;
   }
 

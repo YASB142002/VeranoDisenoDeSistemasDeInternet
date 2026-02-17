@@ -12,8 +12,7 @@
     "skipLibCheck": true
   },
   "include": [
-    "src",
-    "prisma.config.bak"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
